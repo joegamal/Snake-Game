@@ -1,0 +1,151 @@
+import javax.swing.*;
+import javax.swing.Timer;
+import java.util.*;
+import java.awt.*;
+import java.awt.event.*;
+
+
+public class SnakeGame extends JPanel implements ActionListener, KeyListener{
+
+
+    int tileSize = 25;
+    int width;
+    int height;
+    int score = 0;
+    Random rand ;
+
+
+    public void move(){
+        rand = new Random();
+        snakehead.x += speedx;
+        snakehead.y += speedy;
+        // check for layout endings.
+        if(snakehead.x > 800/tileSize){
+            snakehead.x = 1;
+        }
+        if(snakehead.x < 0){
+            snakehead.x = 800/tileSize;
+        }
+        if(snakehead.y > 600/tileSize){
+            snakehead.y = 1;
+        }
+        if(snakehead.y < 0){
+            snakehead.y = 600/tileSize;
+        }
+
+        //check for eat food or not.
+        if(snakehead.x == food.x && snakehead.y == food.y){
+            score++;
+            snakebody.add(new Tile(food.x,food.y));
+            food.x = rand.nextInt(800/tileSize);
+            food.y = rand.nextInt(600/tileSize);
+        }
+
+        for(int i = snakebody.size()-1;i>=0;i--){
+            Tile part = snakebody.get(i);
+            if(i == 0){
+                part.x = snakehead.x;
+                part.y = snakehead.y;
+            }else{
+                Tile prevpart = snakebody.get(i - 1);
+                part.x =  prevpart.x;
+                part.y = prevpart.y;
+            }
+        }
+
+
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        move();
+        repaint();
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if(e.getKeyCode() == KeyEvent.VK_UP){
+            speedx = 0;
+            speedy = -1;
+        }else if(e.getKeyCode() == KeyEvent.VK_DOWN){
+            speedy = 1;
+            speedx = 0;
+        }else if(e.getKeyCode() == KeyEvent.VK_RIGHT){
+            speedy =0;
+            speedx = 1;
+        }else if(e.getKeyCode() == KeyEvent.VK_LEFT){
+            speedx = -1;
+            speedy = 0;
+        }else{}
+    }
+    @Override
+    public void keyTyped(KeyEvent e) {}
+    @Override
+    public void keyReleased(KeyEvent e) {}
+
+    private static class Tile{
+        int x,y;
+        Tile(int x, int y){
+            this.x = x;
+            this.y = y;
+
+        }
+    }
+
+    Tile snakehead;
+    Tile food;
+    ArrayList<Tile> snakebody;
+    Timer gameloop;
+    int speedx;
+    int speedy;
+
+
+    SnakeGame(int width, int height){
+        this.width= width;
+        this.height = height;
+        setPreferredSize(new Dimension(this.width, this.height));
+        setBackground(Color.black);
+        snakehead = new Tile(5, 5);
+        snakebody= new ArrayList<Tile>();
+
+        addKeyListener(this);
+        setFocusable(true);
+
+
+        food = new Tile(10, 10);
+        rand = new Random();
+        placeFood();
+
+        speedx = 0;
+        speedy = 0;
+        gameloop = new Timer(100,this);
+        gameloop.start();
+    }
+
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        draw(g);
+    }
+
+    public void draw(Graphics g){
+        g.setColor(Color.blue);
+        g.fillRect(snakehead.x * tileSize,snakehead.y * tileSize,tileSize,tileSize);
+
+        g.setColor(Color.green);
+        g.fillRect(food.x * tileSize,food.y * tileSize,tileSize,tileSize);
+
+
+        for(int i = 0; i < snakebody.size();i++){
+            Tile part = snakebody.get(i);
+            g.setColor(Color.blue);
+            g.fillRect(part.x * tileSize, part.y * tileSize, tileSize,tileSize);
+        }
+    }
+
+
+    public void placeFood(){
+        food.x = rand.nextInt(800/tileSize);
+        food.y = rand.nextInt(600/tileSize);
+    }
+
+}
